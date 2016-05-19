@@ -3,7 +3,7 @@ SOURCES=main.c
 
 DEPS=
 COBJ=$(SOURCES:.c=.o)
-PCA_PREFIX=../pca
+PCA_PREFIX=/home/avj/arduino/pca
 
 CC=avr-gcc
 OBJC=avr-objcopy
@@ -12,14 +12,15 @@ CFLAGS=-I. -I$(PCA_PREFIX)/include/ -Wall -Os -DF_CPU=16000000UL -std=c99
 LDFLAGS=-lpca -L$(PCA_PREFIX)
 
 ISPPORT=/dev/ttyACM0
-ISPDIR=/usr/share/arduino/hardware/tools
-ISP=$(ISPDIR)/avrdude
-ISPFLAGS=-c arduino -p $(MCU) -P $(ISPPORT) -b 115200 -C $(ISPDIR)/avrdude.conf 
+ISPDIR=/home/avj/arduino-1.6.9/hardware/tools
+ISP=$(ISPDIR)/avr/bin/avrdude
+ISPFLAGS=-c arduino -p $(MCU) -P $(ISPPORT) -b 115200 -C $(ISPDIR)/avr/etc/avrdude.conf 
 
 all: $(TARGET)
 
 %.o: %.c $(DEPS)
 	@echo -e "\tCC" $<
+	echo @$(CC) -mmcu=$(MCU) -c -o $@ $< $(CFLAGS)
 	@$(CC) -mmcu=$(MCU) -c -o $@ $< $(CFLAGS)
 
 libpca.a:
@@ -39,5 +40,5 @@ clean:
 read:
 	$(ISP) $(ISPFLAGS) -U flash:r:$(TARGET)_backup.hex:i
 
-install:
+install: $(TARGET)
 	$(ISP) $(ISPFLAGS) -U flash:w:$(TARGET).hex
